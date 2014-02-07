@@ -49,6 +49,21 @@ sub request_access_token {
     return $token;
 }
 
+sub break_sentences {
+    my ($self, %args) = @_;
+    my $text = $args{text};
+    my $language = $args{language};
+
+    if (!defined $text || !defined $language) {
+        Carp::croak('text and language are required');
+    }
+
+    my $api_url = $self->_api_url('BreakSentences');
+    $api_url->query_param(text => $text);
+    $api_url->query_param(language => $language);
+    $self->_get($api_url, ForceArray => ['int']);
+}
+
 sub detect {
     my ($self, %args) = @_;
     my $text = $args{text};
