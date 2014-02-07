@@ -11,3 +11,11 @@ MANIFEST.bak
 *.sw[po]
 MYMETA.yml
 MYMETA.json
+/WebService-Microsoft-Translator-*
+/.build
+/_build_params
+/Build
+/Build.bat
+!Build/
+!META.json
+!LICENSE

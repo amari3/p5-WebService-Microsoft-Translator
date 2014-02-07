@@ -1,0 +1,64 @@
+{
+   "abstract" : "Microsoft Translator API with Perl",
+   "author" : [
+      "Ryoji Tanida <ryo2.amari3@gmail.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Minilla/v0.11.0, CPAN::Meta::Converter version 2.120921",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "WebService-Microsoft-Translator",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples",
+         "author",
+         "builder"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.36",
+            "Test::More" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "CPAN::Meta" : "0",
+            "CPAN::Meta::Prereqs" : "0",
+            "Module::Build" : "0.38"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion" : "0.10108",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
+         }
+      }
+   },
+   "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/amari3/p5-WebService-Microsoft-Translator/issues"
+      },
+      "homepage" : "https://github.com/amari3/p5-WebService-Microsoft-Translator",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/amari3/p5-WebService-Microsoft-Translator.git",
+         "web" : "https://github.com/amari3/p5-WebService-Microsoft-Translator"
+      }
+   },
+   "version" : "0.01"
+}

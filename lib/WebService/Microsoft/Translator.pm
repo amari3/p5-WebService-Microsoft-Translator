@@ -184,7 +184,7 @@ __END__
 
 =head1 NAME
 
-WebService::Microsoft::Translator -
+WebService::Microsoft::Translator - Microsoft Translator API with Perl
 
 =head1 SYNOPSIS
 
