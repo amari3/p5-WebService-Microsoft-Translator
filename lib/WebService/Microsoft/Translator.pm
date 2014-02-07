@@ -77,6 +77,34 @@ sub detect {
     $self->_get($api_url);
 }
 
+sub detect_array {
+    my ($self, %args) = @_;
+    my $texts = $args{texts};
+
+    if (!$texts) {
+        Carp::croak('texts is required');
+    }
+    if (ref $texts ne 'ARRAY') {
+        Carp::croak('texts parameter is expecting a ARRAYREF');
+    }
+
+    my $api_url = $self->_api_url('DetectArray');
+    my $body = $self->_detect_array_body($texts);
+    $self->_post($api_url, $body, ForceArray => 'string');
+}
+
+sub _detect_array_body {
+    my ($self, $texts) = @_;
+    my $body = +{
+        ArrayOfstring => [+{
+            xmlns     => 'http://schemas.microsoft.com/2003/10/Serialization/Arrays',
+            'xmlns:i' => 'http://www.w3.org/2001/XMLSchema-instance',
+            string    => [ map { +{ content => $_, } } @$texts ],
+        }],
+    };
+    return $self->xml->XMLout($body, RootName => undef);
+}
+
 sub get_languages_for_translate {
     my $self = shift;
     my $api_url = $self->_api_url('GetLanguagesForTranslate');
