@@ -2,7 +2,6 @@ package WebService::Microsoft::Translator;
 use strict;
 use warnings;
 use Carp;
-use UNIVERSAL::require;
 use LWP::UserAgent;
 use URI;
 use URI::QueryParam;
@@ -17,11 +16,13 @@ our $VERSION = '0.01';
 __PACKAGE__->mk_accessors(qw(
     access_token
     ua
+    xml
 ));
 __PACKAGE__->mk_ro_accessors(qw(
     client_id
     client_secret
     base_url
+    response
 ));
 
 sub new {
@@ -32,6 +33,7 @@ sub new {
         env_proxy => 1,
         timeout   => 30,
     );
+    $args{xml} = XML::Simple->new;
     return $class->SUPER::new(\%args);
 }
 
@@ -50,7 +52,7 @@ sub request_access_token {
 sub get_languages_for_translate {
     my $self = shift;
     my $api_url = $self->_api_url('GetLanguagesForTranslate');
-    $self->_get($api_url, 'GetLanguagesForTranslate');
+    $self->_get($api_url, ForceArray => ['string']);
 }
 
 sub translate {
@@ -72,7 +74,7 @@ sub translate {
     $api_url->query_param(contentType => $content_type);
     $api_url->query_param(category    => $category) if $category;
 
-    $self->_get($api_url, 'Translate');
+    $self->_get($api_url);
 }
 
 sub translate_array {
@@ -91,7 +93,7 @@ sub translate_array {
     my $api_url = $self->_api_url('TranslateArray');
     my $body = $self->_translate_array_body(%args);
 
-    $self->_post($api_url, $body, 'TranslateArray');
+    $self->_post($api_url, $body, ForceArray => ['TranslateArrayResponse']);
 }
 
 sub _translate_array_body {
@@ -147,23 +149,20 @@ sub _api_url {
 }
 
 sub _get {
-    my ($self, $url, $result_class) = @_;
+    my ($self, $url, %opt) = @_;
 
-    my $response = $self->ua->get($url, Authorization => $self->_authorization);
+    my $response = $self->{response} = $self->ua->get($url, Authorization => $self->_authorization);
     if (!$response->is_success) {
         Carp::croak("request to $url failed.");
     }
 
-    $result_class = 'WebService::Microsoft::Translator::' . $result_class;
-    $result_class->require;
-
-    return $result_class->new($response->content);
+    return $self->xml->XMLin($response->content, %opt);
 }
 
 sub _post {
-    my ($self, $url, $body, $result_class) = @_;
+    my ($self, $url, $body, %opt) = @_;
 
-    my $response = $self->ua->post(
+    my $response = $self->{response} = $self->ua->post(
         $url,
         content_type  => 'text/xml',
         Authorization => $self->_authorization,
@@ -173,10 +172,7 @@ sub _post {
         Carp::croak("request to $url failed.");
     }
 
-    $result_class = 'WebService::Microsoft::Translator::' . $result_class;
-    $result_class->require;
-
-    return $result_class->new($response->content);
+    return $self->xml->XMLin($response->content, %opt);
 }
 
 1;
