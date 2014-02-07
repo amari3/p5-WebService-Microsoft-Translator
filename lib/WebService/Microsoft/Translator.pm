@@ -107,14 +107,14 @@ sub translate {
 sub translate_array {
     my ($self, %args) = @_;
 
-    if (!$args{Texts} || !$args{To}) {
-        Carp::croak('Texts and To are required');
+    if (!$args{texts} || !$args{to}) {
+        Carp::croak('texts and to are required');
     }
-    if (ref $args{Texts} ne 'ARRAY') {
-        Carp::croak('Texts parameter is expecting a ARRAYREF');
+    if (ref $args{texts} ne 'ARRAY') {
+        Carp::croak('texts parameter is expecting a ARRAYREF');
     }
-    if ($args{Options} && ref $args{Options} ne 'HASH') {
-        Carp::croak('Options parameter is expecting a HASHREF');
+    if ($args{options} && ref $args{options} ne 'HASH') {
+        Carp::croak('options parameter is expecting a HASHREF');
     }
 
     my $api_url = $self->_api_url('TranslateArray');
@@ -127,10 +127,10 @@ sub _translate_array_body {
 
     my $body = +{
         AppId   => [ +{ '-' => '', } ],
-        To      => [ +{ content => $args{To}, } ],
-        Texts   => $self->_translate_array_body_texts($args{Texts}),
-        From    => $self->_translate_array_body_from($args{From}),
-        Options => $self->_translate_array_body_options($args{Options}),
+        To      => [ +{ content => $args{to}, } ],
+        Texts   => $self->_translate_array_body_texts($args{texts}),
+        From    => $self->_translate_array_body_from($args{from}),
+        Options => $self->_translate_array_body_options($args{options}),
     };
     return $self->xml->XMLout($body, RootName => 'TranslateArrayRequest');
 }
