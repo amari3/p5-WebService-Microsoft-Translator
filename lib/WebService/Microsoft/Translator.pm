@@ -49,6 +49,19 @@ sub request_access_token {
     return $token;
 }
 
+sub detect {
+    my ($self, %args) = @_;
+    my $text = $args{text};
+
+    if (!defined $text) {
+        Carp::croak('text is required');
+    }
+
+    my $api_url = $self->_api_url('Detect');
+    $api_url->query_param(text => $text);
+    $self->_get($api_url);
+}
+
 sub get_languages_for_translate {
     my $self = shift;
     my $api_url = $self->_api_url('GetLanguagesForTranslate');
@@ -73,7 +86,6 @@ sub translate {
     $api_url->query_param(to   => $to);
     $api_url->query_param(contentType => $content_type);
     $api_url->query_param(category    => $category) if $category;
-
     $self->_get($api_url);
 }
 
@@ -92,7 +104,6 @@ sub translate_array {
 
     my $api_url = $self->_api_url('TranslateArray');
     my $body = $self->_translate_array_body(%args);
-
     $self->_post($api_url, $body, ForceArray => ['TranslateArrayResponse']);
 }
 
@@ -106,7 +117,7 @@ sub _translate_array_body {
         From    => $self->_translate_array_body_from($args{From}),
         Options => $self->_translate_array_body_options($args{Options}),
     };
-    return XMLout($body, RootName => 'TranslateArrayRequest');
+    return $self->xml->XMLout($body, RootName => 'TranslateArrayRequest');
 }
 
 sub _translate_array_body_from {
