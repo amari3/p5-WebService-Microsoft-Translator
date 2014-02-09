@@ -28,7 +28,7 @@ __PACKAGE__->mk_ro_accessors(qw(
 sub new {
     my ($class, %args) = @_;
 
-    $args{base_url} = 'http://api.microsofttranslator.com/v2/Http.svc/';
+    $args{base_url} = 'http://api.microsofttranslator.com/V2/Http.svc/';
     $args{ua} ||= LWP::UserAgent->new(
         env_proxy => 1,
         timeout   => 30,
@@ -89,20 +89,42 @@ sub detect_array {
     }
 
     my $api_url = $self->_api_url('DetectArray');
-    my $body = $self->_detect_array_body($texts);
+    my $body = $self->_array_of_string_body($texts);
     $self->_post($api_url, $body, ForceArray => 'string');
 }
 
-sub _detect_array_body {
-    my ($self, $texts) = @_;
+sub _array_of_string_body {
+    my ($self, $strings) = @_;
     my $body = +{
         ArrayOfstring => [+{
             xmlns     => 'http://schemas.microsoft.com/2003/10/Serialization/Arrays',
             'xmlns:i' => 'http://www.w3.org/2001/XMLSchema-instance',
-            string    => [ map { +{ content => $_, } } @$texts ],
+            string    => [ map { +{ content => $_, } } @$strings ],
         }],
     };
     return $self->xml->XMLout($body, RootName => undef);
+}
+
+sub get_language_names {
+    my ($self, %args) = @_;
+    my $locale = $args{locale};
+    my $language_codes = $args{languageCodes};
+
+    if (!defined $locale) {
+        Carp::croak('locale is required');
+    }
+    if (!$language_codes) {
+        Carp::croak('languageCodes is required');
+    }
+    if (ref $language_codes ne 'ARRAY') {
+        Carp::croak('languageCodes parameter is expecting a ARRAYREF');
+    }
+
+    my $api_url = $self->_api_url('GetLanguageNames');
+    $api_url->query_param(locale => $locale);
+
+    my $body = $self->_array_of_string_body($language_codes);
+    $self->_post($api_url, $body, ForceArray => 'string');
 }
 
 sub get_languages_for_translate {
