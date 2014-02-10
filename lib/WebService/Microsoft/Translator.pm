@@ -110,11 +110,8 @@ sub get_language_names {
     my $locale = $args{locale};
     my $language_codes = $args{languageCodes};
 
-    if (!defined $locale) {
-        Carp::croak('locale is required');
-    }
-    if (!$language_codes) {
-        Carp::croak('languageCodes is required');
+    if (!defined $locale || !$language_codes) {
+        Carp::croak('locale and languageCodes are required');
     }
     if (ref $language_codes ne 'ARRAY') {
         Carp::croak('languageCodes parameter is expecting a ARRAYREF');
