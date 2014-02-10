@@ -108,7 +108,7 @@ sub _add_translation_array_body {
     my $body = +{
         AppId        => [ +{ '-' => '', } ],
         To           => [ +{ content => $args{to}, } ],
-        From         => [ +{ content => $args{from}, } ],
+        From         => $self->_array_body_from($args{from}),
         Translations => $self->_add_translation_array_body_translations($args{translations}),
         Options      => $self->_add_translation_array_body_options($args{options}),
     };
@@ -280,6 +280,40 @@ sub _get_translations_body_options {
     return $self->xml->XMLout($body, RootName => undef);
 }
 
+sub get_translations_array {
+    my ($self, %args) = @_;
+
+    if (!$args{texts} || !$args{from} || !$args{to} || !exists $args{maxTranslations}) {
+        Carp::croak('texts, from, to and maxTranslations are required');
+    }
+    if (ref $args{texts} ne 'ARRAY') {
+        Carp::croak('texts parameter is expecting a ARRAYREF');
+    }
+    if ($args{options} && ref $args{options} ne 'HASH') {
+        Carp::croak('options parameter is expecting a HASHREF');
+    }
+
+    my $api_url = $self->_api_url('GetTranslationsArray');
+    my $body = $self->_get_translations_array_body(%args);
+    $self->_post_and_parse($api_url, $body, ForceArray => ['Translations']);
+}
+
+sub _get_translations_array_body {
+    my ($self, %args) = @_;
+
+    my $body = +{
+        AppId           => [ +{ '-' => '', } ],
+        To              => [ +{ content => $args{to}, } ],
+        maxTranslations => [ +{ content => $args{maxTranslations}, } ],
+        Texts           => $self->_array_body_texts($args{texts}),
+        From            => $self->_array_body_from($args{from}),
+        Options         => $self->_array_body_options($args{options}),
+    };
+    my $xml = $self->xml->XMLout($body, RootName => 'GetTranslationsArrayRequest');
+    $xml =~ s/maxTranslations/MaxTranslations/g;
+    return $xml;
+}
+
 sub translate {
     my ($self, %args) = @_;
     my $text = $args{text};
@@ -325,21 +359,21 @@ sub _translate_array_body {
     my $body = +{
         AppId   => [ +{ '-' => '', } ],
         To      => [ +{ content => $args{to}, } ],
-        Texts   => $self->_translate_array_body_texts($args{texts}),
-        From    => $self->_translate_array_body_from($args{from}),
-        Options => $self->_translate_array_body_options($args{options}),
+        Texts   => $self->_array_body_texts($args{texts}),
+        From    => $self->_array_body_from($args{from}),
+        Options => $self->_array_body_options($args{options}),
     };
     return $self->xml->XMLout($body, RootName => 'TranslateArrayRequest');
 }
 
-sub _translate_array_body_from {
+sub _array_body_from {
     my ($self, $from) = @_;
 
     return [ +{ content => $from, } ] if defined $from;
     return [ +{ '-' => '', } ];
 }
 
-sub _translate_array_body_texts {
+sub _array_body_texts {
     my ($self, $texts) = @_;
     my $xmlns = 'http://schemas.microsoft.com/2003/10/Serialization/Arrays';
 
@@ -347,7 +381,7 @@ sub _translate_array_body_texts {
     return +{ string => \@list };
 }
 
-sub _translate_array_body_options {
+sub _array_body_options {
     my ($self, $options) = @_;
     my $xmlns = 'http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2';
 
@@ -397,6 +431,7 @@ sub _post {
         Content       => $body
     );
     if (!$response->is_success) {
+        print $response->status_line, "\n";
         Carp::croak("request to $url failed.");
     }
     return $response;
