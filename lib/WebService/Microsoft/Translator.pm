@@ -310,7 +310,7 @@ sub _get_translations_array_body {
         Options         => $self->_array_body_options($args{options}),
     };
     my $xml = $self->xml->XMLout($body, RootName => 'GetTranslationsArrayRequest');
-    $xml =~ s/maxTranslations/MaxTranslations/g;
+    $xml =~ s!<maxTranslations>([0-9]+)</maxTranslations>!<MaxTranslations>$1</MaxTranslations>!;
     return $xml;
 }
 
