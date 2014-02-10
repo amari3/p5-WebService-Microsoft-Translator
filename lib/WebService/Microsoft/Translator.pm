@@ -79,6 +79,81 @@ sub add_translation {
     return 1;
 }
 
+sub add_translation_array {
+    my ($self, %args) = @_;
+    my $translations = $args{translations};
+    my $from = $args{from};
+    my $to = $args{to};
+    my $options = $args{options};
+
+    if (!$args{translations} || !$args{from} || !$args{to} || !$args{options}) {
+        Carp::croak('translations, from, to and options are required');
+    }
+    if (ref $args{translations} ne 'ARRAY') {
+        Carp::croak('translations parameter is expecting a ARRAYREF');
+    }
+    if (ref $args{options} ne 'HASH') {
+        Carp::croak('options parameter is expecting a HASHREF');
+    }
+
+    my $api_url = $self->_api_url('AddTranslationArray');
+    my $body = $self->_add_translation_array_body(%args);
+    $self->_post($api_url, $body);
+    return 1;
+}
+
+sub _add_translation_array_body {
+    my ($self, %args) = @_;
+
+    my $body = +{
+        AppId        => [ +{ '-' => '', } ],
+        To           => [ +{ content => $args{to}, } ],
+        From         => [ +{ content => $args{from}, } ],
+        Translations => $self->_add_translation_array_body_translations($args{translations}),
+        Options      => $self->_add_translation_array_body_options($args{options}),
+    };
+    return $self->xml->XMLout($body, RootName => 'AddtranslationsRequest');
+}
+
+sub _add_translation_array_body_translations {
+    my ($self, $translations) = @_;
+    my $xmlns = 'http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2';
+
+    my @list = ();
+    for my $translation (@$translations) {
+        if (!exists $translation->{OriginalText} ||
+            !exists $translation->{TranslatedText} ||
+            !exists $translation->{Rating}) {
+            Carp::croak('OriginalText, TranslatedText and Rating are required');
+        }
+        push @list, +{
+            OriginalText   => [ +{ content => $translation->{OriginalText} } ],
+            TranslatedText => [ +{ content => $translation->{TranlatedText} } ],
+            Rating         => [ +{ content => $translation->{Rating} } ],
+            Sequence       => [ +{ content => $translation->{Sequence} || 0 } ],
+        };
+    }
+    return +{ Translation => \@list };
+}
+
+sub _add_translation_array_body_options {
+    my ($self, $options) = @_;
+    my $xmlns = 'http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2';
+
+    if (!exists $options->{User}) {
+        Carp::croak('options.User is required');
+    }
+    my %op = ();
+    for my $key (qw(Category ContentType User Uri)) {
+        if (exists $options->{$key}) {
+            $op{$key} = [ +{ xmlns => $xmlns, content => $options->{$key}, } ];
+        } else {
+            $op{$key} = [ +{ xmlns => $xmlns, } ];
+        }
+    }
+    return \%op;
+}
+
 sub break_sentences {
     my ($self, %args) = @_;
     my $text = $args{text};
