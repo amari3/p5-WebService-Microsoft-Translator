@@ -130,6 +130,51 @@ sub get_languages_for_translate {
     $self->_get($api_url, ForceArray => ['string']);
 }
 
+sub get_translations {
+    my ($self, %args) = @_;
+    my $text = $args{text};
+    my $from = $args{from};
+    my $to = $args{to};
+    my $max_translations = $args{maxTranslations};
+    my $options = $args{options};
+
+    if (!$text || !$from || !$to || !defined $max_translations) {
+        Carp::croak('text, from, to and maxTranslations are required');
+    }
+    if ($options && ref $options ne 'HASH') {
+        Carp::croak('options parameter is expecting a HASHREF');
+    }
+
+    my $api_url = $self->_api_url('GetTranslations');
+    $api_url->query_param(text => $text);
+    $api_url->query_param(from => $from);
+    $api_url->query_param(to => $to);
+    $api_url->query_param(maxTranslations => $max_translations);
+
+    my $body = $options ? $self->_get_translations_body_options($options) : '';
+    $self->_post($api_url, $body);
+}
+
+sub _get_translations_body_options {
+    my ($self, $options) = @_;
+
+    my %op = (ReservedFlags => [ +{ '-' => '', } ]);
+    for my $key (qw(Category ContentType Url User State)) {
+        if (exists $options->{$key}) {
+            $op{$key} = [ +{ content => $options->{$key}} ];
+        } else {
+            $op{$key} = [ +{ '-' => '', } ];
+        }
+    }
+    my $body = +{
+        TranslateOptions => [+{
+            xmlns => 'http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2',
+            %op,
+        }],
+    };
+    return $self->xml->XMLout($body, RootName => undef);
+}
+
 sub translate {
     my ($self, %args) = @_;
     my $text = $args{text};
