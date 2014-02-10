@@ -54,7 +54,7 @@ sub break_sentences {
     my $text = $args{text};
     my $language = $args{language};
 
-    if (!defined $text || !defined $language) {
+    if (!defined $text || !$language) {
         Carp::croak('text and language are required');
     }
 
@@ -110,7 +110,7 @@ sub get_language_names {
     my $locale = $args{locale};
     my $language_codes = $args{languageCodes};
 
-    if (!defined $locale || !$language_codes) {
+    if (!$locale || !$language_codes) {
         Carp::croak('locale and languageCodes are required');
     }
     if (ref $language_codes ne 'ARRAY') {
