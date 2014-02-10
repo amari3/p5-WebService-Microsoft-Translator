@@ -49,6 +49,36 @@ sub request_access_token {
     return $token;
 }
 
+sub add_translation {
+    my ($self, %args) = @_;
+    my $original_text = $args{originalText};
+    my $translated_text = $args{translatedText};
+    my $from = $args{from};
+    my $to = $args{to};
+    my $rating = $args{rating};
+    my $content_type = $args{contentType};
+    my $category = $args{category};
+    my $user = $args{user};
+    my $uri = $args{uri};
+
+    if (!defined $original_text || !defined $translated_text || !$from || !$to || !defined $user) {
+        Carp::croak('originalText, translatedText, from, to and user are required');
+    }
+
+    my $api_url = $self->_api_url('AddTranslation');
+    $api_url->query_param(originalText => $original_text);
+    $api_url->query_param(translatedText => $translated_text);
+    $api_url->query_param(from => $from);
+    $api_url->query_param(to => $to);
+    $api_url->query_param(rating => $rating) if defined $rating;
+    $api_url->query_param(contentType => $content_type) if $content_type;
+    $api_url->query_param(category => $category) if $category;
+    $api_url->query_param(user => $user);
+    $api_url->query_param(uri => $uri) if $uri;
+    $self->_get($api_url);
+    return 1;
+}
+
 sub break_sentences {
     my ($self, %args) = @_;
     my $text = $args{text};
@@ -61,7 +91,7 @@ sub break_sentences {
     my $api_url = $self->_api_url('BreakSentences');
     $api_url->query_param(text => $text);
     $api_url->query_param(language => $language);
-    $self->_get($api_url, ForceArray => ['int']);
+    $self->_get_and_parse($api_url, ForceArray => ['int']);
 }
 
 sub detect {
@@ -74,7 +104,7 @@ sub detect {
 
     my $api_url = $self->_api_url('Detect');
     $api_url->query_param(text => $text);
-    $self->_get($api_url);
+    $self->_get_and_parse($api_url);
 }
 
 sub detect_array {
@@ -90,7 +120,7 @@ sub detect_array {
 
     my $api_url = $self->_api_url('DetectArray');
     my $body = $self->_array_of_string_body($texts);
-    $self->_post($api_url, $body, ForceArray => 'string');
+    $self->_post_and_parse($api_url, $body, ForceArray => 'string');
 }
 
 sub _array_of_string_body {
@@ -121,13 +151,13 @@ sub get_language_names {
     $api_url->query_param(locale => $locale);
 
     my $body = $self->_array_of_string_body($language_codes);
-    $self->_post($api_url, $body, ForceArray => 'string');
+    $self->_post_and_parse($api_url, $body, ForceArray => 'string');
 }
 
 sub get_languages_for_translate {
     my $self = shift;
     my $api_url = $self->_api_url('GetLanguagesForTranslate');
-    $self->_get($api_url, ForceArray => ['string']);
+    $self->_get_and_parse($api_url, ForceArray => ['string']);
 }
 
 sub get_translations {
@@ -138,7 +168,7 @@ sub get_translations {
     my $max_translations = $args{maxTranslations};
     my $options = $args{options};
 
-    if (!$text || !$from || !$to || !defined $max_translations) {
+    if (!defined $text || !$from || !$to || !defined $max_translations) {
         Carp::croak('text, from, to and maxTranslations are required');
     }
     if ($options && ref $options ne 'HASH') {
@@ -152,7 +182,7 @@ sub get_translations {
     $api_url->query_param(maxTranslations => $max_translations);
 
     my $body = $options ? $self->_get_translations_body_options($options) : '';
-    $self->_post($api_url, $body);
+    $self->_post_and_parse($api_url, $body);
 }
 
 sub _get_translations_body_options {
@@ -193,7 +223,7 @@ sub translate {
     $api_url->query_param(to   => $to);
     $api_url->query_param(contentType => $content_type);
     $api_url->query_param(category    => $category) if $category;
-    $self->_get($api_url);
+    $self->_get_and_parse($api_url);
 }
 
 sub translate_array {
@@ -211,7 +241,7 @@ sub translate_array {
 
     my $api_url = $self->_api_url('TranslateArray');
     my $body = $self->_translate_array_body(%args);
-    $self->_post($api_url, $body, ForceArray => ['TranslateArrayResponse']);
+    $self->_post_and_parse($api_url, $body, ForceArray => ['TranslateArrayResponse']);
 }
 
 sub _translate_array_body {
@@ -267,18 +297,23 @@ sub _api_url {
 }
 
 sub _get {
-    my ($self, $url, %opt) = @_;
+    my ($self, $url) = @_;
 
     my $response = $self->{response} = $self->ua->get($url, Authorization => $self->_authorization);
     if (!$response->is_success) {
         Carp::croak("request to $url failed.");
     }
+    return $response;
+}
 
+sub _get_and_parse {
+    my ($self, $url, %opt) = @_;
+    my $response = $self->_get($url, %opt);
     return $self->xml->XMLin($response->content, %opt);
 }
 
 sub _post {
-    my ($self, $url, $body, %opt) = @_;
+    my ($self, $url, $body) = @_;
 
     my $response = $self->{response} = $self->ua->post(
         $url,
@@ -289,7 +324,12 @@ sub _post {
     if (!$response->is_success) {
         Carp::croak("request to $url failed.");
     }
+    return $response;
+}
 
+sub _post_and_parse {
+    my ($self, $url, $body, %opt) = @_;
+    my $response = $self->_post($url, $body);
     return $self->xml->XMLin($response->content, %opt);
 }
 
