@@ -431,7 +431,6 @@ sub _post {
         Content       => $body
     );
     if (!$response->is_success) {
-        print $response->status_line, "\n";
         Carp::croak("request to $url failed.");
     }
     return $response;
