@@ -229,6 +229,12 @@ sub get_language_names {
     $self->_post_and_parse($api_url, $body, ForceArray => 'string');
 }
 
+sub get_languages_for_speak {
+    my $self = shift;
+    my $api_url = $self->_api_url('GetLanguagesForSpeak');
+    $self->_get_and_parse($api_url, ForceArray => ['string']);
+}
+
 sub get_languages_for_translate {
     my $self = shift;
     my $api_url = $self->_api_url('GetLanguagesForTranslate');
