@@ -320,6 +320,27 @@ sub _get_translations_array_body {
     return $xml;
 }
 
+sub speak {
+    my ($self, %args) = @_;
+    my $text = $args{text};
+    my $language = $args{language};
+    my $format = $args{format};
+    my $options = $args{options};
+
+    if (!defined $text || !$language) {
+        Carp::croak('text and language are required');
+    }
+
+    my $api_url = $self->_api_url('Speak');
+    $api_url->query_param(text => $text);
+    $api_url->query_param(language => $language);
+    $api_url->query_param(format => $format) if $format;
+    $api_url->query_param(options => $options) if $options;
+
+    my $response = $self->_get($api_url);
+    return $response->content;
+}
+
 sub translate {
     my ($self, %args) = @_;
     my $text = $args{text};
