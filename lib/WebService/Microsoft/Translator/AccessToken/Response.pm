@@ -3,14 +3,10 @@ use strict;
 use warnings;
 use Carp;
 
-use base qw(Class::Accessor::Fast);
-
-__PACKAGE__->mk_ro_accessors(qw(
-    access_token
-    token_type
-    expires_in
-    scope
-));
+use Class::Accessor::Lite (
+    new => 0,
+    ro => [ qw(access_token token_type expires_in scope) ],
+);
 
 sub new {
     my ($class, $token) = @_;
@@ -18,8 +14,7 @@ sub new {
     if (!defined $token) {
         Carp::croak('token is required');
     }
-
-    return $class->SUPER::new($token);
+    return bless $token, $class;
 }
 
 1;

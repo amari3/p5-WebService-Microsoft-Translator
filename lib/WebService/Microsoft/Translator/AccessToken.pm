@@ -6,18 +6,11 @@ use JSON;
 
 use WebService::Microsoft::Translator::AccessToken::Response;
 
-use base qw(Class::Accessor::Fast);
-
-__PACKAGE__->mk_accessors(qw(
-    ua
-));
-__PACKAGE__->mk_ro_accessors(qw(
-    client_id
-    client_secret
-    scope
-    grant_type
-    authorize_url
-));
+use Class::Accessor::Lite (
+    new => 0,
+    rw => [ qw(ua) ],
+    ro => [ qw(client_id client_secret scope grant_type authorize_url) ],
+);
 
 sub new {
     my ($class, %args) = @_;
@@ -33,8 +26,7 @@ sub new {
         env_proxy => 1,
         timeout   => 30,
     );
-
-    return $class->SUPER::new(\%args);
+    return bless \%args, $class;
 }
 
 sub request {

@@ -9,21 +9,13 @@ use XML::Simple;
 
 use WebService::Microsoft::Translator::AccessToken;
 
-use base qw(Class::Accessor::Fast);
+use Class::Accessor::Lite (
+    new => 0,
+    rw => [ qw(access_token ua xml) ],
+    ro => [ qw(client_id client_secret base_url response) ],
+);
 
 our $VERSION = '0.01';
-
-__PACKAGE__->mk_accessors(qw(
-    access_token
-    ua
-    xml
-));
-__PACKAGE__->mk_ro_accessors(qw(
-    client_id
-    client_secret
-    base_url
-    response
-));
 
 sub new {
     my ($class, %args) = @_;
@@ -34,7 +26,7 @@ sub new {
         timeout   => 30,
     );
     $args{xml} = XML::Simple->new;
-    return $class->SUPER::new(\%args);
+    return bless \%args, $class;
 }
 
 sub request_access_token {
