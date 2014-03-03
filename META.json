@@ -1,7 +1,7 @@
 {
-   "abstract" : "Microsoft Translator API with Perl",
+   "abstract" : "A Perl interface to the Microsoft Translator API",
    "author" : [
-      "Ryoji Tanida <ryo2.amari3@gmail.com>"
+      "Ryoji Tanida <ryo2.amari3 at gmail.com>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v0.11.0, CPAN::Meta::Converter version 2.120921",
@@ -70,5 +70,8 @@
          "web" : "https://github.com/amari3/p5-WebService-Microsoft-Translator"
       }
    },
-   "version" : "0.01"
+   "version" : "0.01",
+   "x_contributors" : [
+      "amari3 <ryo2.amari3@gmail.com>"
+   ]
 }
