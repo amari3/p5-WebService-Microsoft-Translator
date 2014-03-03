@@ -519,9 +519,9 @@ http://www.bing.com/developers/
 
 =back
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE
 
-Copyright 2014 Ryoji Tanida.
+Copyright (C) Ryoji Tanida
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
